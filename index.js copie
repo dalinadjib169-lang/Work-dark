@@ -1,0 +1,86 @@
+"use client";
+import { useState } from "react";
+
+export default function Home() {
+  const [level, setLevel] = useState("");
+  const [subject, setSubject] = useState("");
+  const [docType, setDocType] = useState("");
+  const [language, setLanguage] = useState("");
+  const [customText, setCustomText] = useState("");
+  const [result, setResult] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleGenerate = async () => {
+    if (!customText) {
+      alert("اكتب النص الذي تريد توليده أولاً");
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: customText }),
+      });
+      const data = await response.json();
+      setResult(data.text || "لا توجد نتيجة");
+    } catch (error) {
+      console.error(error);
+      setResult("حدث خطأ أثناء الاتصال بالذكاء الاصطناعي");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen p-4 bg-black text-white flex flex-col items-center text-right">
+      <h1 className="text-3xl font-bold mb-6 text-blue-400">Prof Dali - مولد المستندات</h1>
+      <div className="w-full max-w-md flex flex-col gap-3">
+        <select className="p-2 rounded border bg-gray-800 text-white" value={level} onChange={(e) => setLevel(e.target.value)}>
+          <option value="">-- اختر الطور --</option>
+          <option value="ابتدائي">ابتدائي</option>
+          <option value="متوسط">متوسط</option>
+          <option value="ثانوي">ثانوي</option>
+        </select>
+        <select className="p-2 rounded border bg-gray-800 text-white" value={subject} onChange={(e) => setSubject(e.target.value)}>
+          <option value="">-- اختر المادة --</option>
+          <option value="رياضيات">رياضيات</option>
+          <option value="فرنسية">فرنسية</option>
+          <option value="إنجليزية">إنجليزية</option>
+          <option value="علوم">علوم</option>
+        </select>
+        <select className="p-2 rounded border bg-gray-800 text-white" value={docType} onChange={(e) => setDocType(e.target.value)}>
+          <option value="">-- اختر نوع المستند --</option>
+          <option value="مذكرة">مذكرة</option>
+          <option value="اختبار">اختبار</option>
+        </select>
+        <select className="p-2 rounded border bg-gray-800 text-white" value={language} onChange={(e) => setLanguage(e.target.value)}>
+          <option value="">-- اختر اللغة --</option>
+          <option value="العربية">العربية</option>
+          <option value="Français">Français</option>
+          <option value="English">English</option>
+        </select>
+        <textarea
+          className="p-2 border rounded resize-none bg-gray-800 text-white"
+          rows={4}
+          placeholder="اكتب هنا النص الذي تريد توليده"
+          value={customText}
+          onChange={(e) => setCustomText(e.target.value)}
+        />
+        <button
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded transition-colors"
+          onClick={handleGenerate}
+          disabled={loading}
+        >
+          {loading ? "جاري التوليد..." : "توليد"}
+        </button>
+        {result && (
+          <div className="mt-4 p-3 bg-gray-900 border rounded h-64 overflow-y-auto">
+            <h2 className="font-semibold mb-2">النتيجة:</h2>
+            <p>{result}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
